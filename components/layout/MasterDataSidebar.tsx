@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronDownIcon, ChevronRight } from 'lucide-react';
@@ -41,7 +37,7 @@ const NavItemLink: React.FC<{ item: NavItem; isOpen: boolean; onToggle: () => vo
             >
                 <div className="flex items-center gap-3">
                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                   <span>{item.label}</span>
+                   <span className="whitespace-nowrap">{item.label}</span>
                 </div>
                 {hasChildren && (isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />)}
             </NavLink>
@@ -62,7 +58,7 @@ const NavItemLink: React.FC<{ item: NavItem; isOpen: boolean; onToggle: () => vo
                             >
                                 <div className="flex items-center gap-3">
                                     <child.icon className="h-4 w-4" />
-                                    <span>{child.label}</span>
+                                    <span className="whitespace-nowrap">{child.label}</span>
                                 </div>
                             </NavLink>
                          </li>
