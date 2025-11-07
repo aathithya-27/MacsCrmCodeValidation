@@ -60,7 +60,14 @@ const ReligionAndFestivalPage: React.FC = () => {
 
     // Filtering and Memoization
     const religionMap = useMemo(() => new Map(religions.map(r => [r.ID, r.RELIGION])), [religions]);
-    const festivalMap = useMemo(() => new Map(festivals.map(f => [f.ID, f.FEST_DESC])), [festivals]);
+    
+    const yearOptions = useMemo(() => {
+        const yearsFromDates = festivalDates.map(d => new Date(d.FESTVEL_DATE).getFullYear());
+        const currentYear = new Date().getFullYear();
+        const surroundingYears = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i); // -5 to +5
+        const allYears = new Set([...yearsFromDates, ...surroundingYears]);
+        return Array.from(allYears).sort((a, b) => a - b);
+    }, [festivalDates]);
 
     const dateCountMap = useMemo(() => festivalDates.reduce((acc, curr) => {
         acc.set(curr.FEST_ID, (acc.get(curr.FEST_ID) || 0) + 1);
@@ -69,11 +76,33 @@ const ReligionAndFestivalPage: React.FC = () => {
 
     const filteredReligions = useMemo(() => searchQuery ? religions.filter(r => r.RELIGION.toLowerCase().includes(searchQuery.toLowerCase())) : religions, [religions, searchQuery]);
     const filteredFestivals = useMemo(() => searchQuery ? festivals.filter(f => f.FEST_DESC.toLowerCase().includes(searchQuery.toLowerCase())) : festivals, [festivals, searchQuery]);
-    const filteredDates = useMemo(() => festivalDates.filter(d => {
-        const festivalName = festivalMap.get(d.FEST_ID) || '';
-        return searchQuery ? festivalName.toLowerCase().includes(searchQuery.toLowerCase()) : true;
-    }), [festivalDates, searchQuery, festivalMap]);
-    
+
+    const festivalDateDisplayItems = useMemo(() => {
+        let festivalsToShow = filteredFestivals;
+
+        if (monthFilter !== 'all') {
+            const festivalIdsInMonth = new Set<number>();
+            festivalDates.forEach(d => {
+                const date = new Date(d.FESTVEL_DATE);
+                if (date.getFullYear() === yearFilter && date.getMonth() === Number(monthFilter)) {
+                    festivalIdsInMonth.add(d.FEST_ID);
+                }
+            });
+            festivalsToShow = festivalsToShow.filter(f => festivalIdsInMonth.has(f.ID));
+        }
+
+        return festivalsToShow.map(festival => {
+            const dateForYear = festivalDates.find(d => 
+                d.FEST_ID === festival.ID && 
+                new Date(d.FESTVEL_DATE).getFullYear() === yearFilter
+            );
+            return {
+                ...festival,
+                dateObject: dateForYear || null
+            };
+        });
+    }, [filteredFestivals, festivalDates, yearFilter, monthFilter]);
+
     // Modal Handling
     const openModal = (type: 'religion' | 'festival' | 'date', item: any | null) => {
         setModalState({ isOpen: true, type, item: item ? { ...item } : { STATUS: 1 } });
@@ -94,44 +123,114 @@ const ReligionAndFestivalPage: React.FC = () => {
                 const payload = item.ID ? { ...typedItem, ...commonFields } : { ...typedItem, ...commonFields, ID: Date.now(), SEQ_NO: religions.length, CREATED_ON: now, CREATED_BY: 1 };
                 const updated = item.ID ? religions.map(i => i.ID === payload.ID ? payload as Religion : i) : [...religions, payload as Religion];
                 await api.onUpdateReligions(updated);
+                setReligions(updated);
             } else if (type === 'festival') {
                 const typedItem = item as Partial<Festival>;
                 if (!typedItem.FEST_DESC?.trim()) { addToast("Festival Name is required.", "error"); return; }
                 const payload = item.ID ? { ...typedItem, ...commonFields } : { ...typedItem, ...commonFields, ID: Date.now(), CREATED_ON: now, CREATED_BY: 1 };
                 const updated = item.ID ? festivals.map(i => i.ID === payload.ID ? payload as Festival : i) : [...festivals, payload as Festival];
                 await api.onUpdateFestivals(updated);
+                setFestivals(updated);
             } else if (type === 'date') {
                 const typedItem = item as Partial<FestivalDate>;
                 if (!typedItem.FEST_ID || !typedItem.FESTVEL_DATE) { addToast("Festival and Date are required.", "error"); return; }
-                const payload = item.ID ? { ...typedItem, ...commonFields } : { ...typedItem, ...commonFields, ID: Date.now(), CREATED_ON: now, CREATED_BY: 1 };
-                const updated = item.ID ? festivalDates.map(i => i.ID === payload.ID ? payload as FestivalDate : i) : [...festivalDates, payload as FestivalDate];
+                
+                let updated = [...festivalDates];
+                let message = '';
+                
+                if (typedItem.ID) { // Editing an existing date
+                    const originalDate = festivalDates.find(d => d.ID === typedItem.ID);
+                    const originalYear = originalDate ? new Date(originalDate.FESTVEL_DATE).getFullYear() : null;
+                    const newYear = new Date(typedItem.FESTVEL_DATE).getFullYear();
+
+                    if (originalYear === newYear) {
+                        // Same year: It's an UPDATE
+                        updated = festivalDates.map(d => d.ID === typedItem.ID ? { ...d, ...typedItem, ...commonFields } as FestivalDate : d);
+                        message = 'Festival date updated successfully.';
+                    } else {
+                        // Different year: It's a CREATE, leaving original untouched
+                        const newDatePayload: FestivalDate = {
+                            ...(typedItem as FestivalDate),
+                            ...commonFields,
+                            ID: Date.now(), // New ID is crucial
+                            CREATED_ON: now,
+                            CREATED_BY: 1,
+                        };
+                        updated.push(newDatePayload);
+                        message = `New festival date for ${newYear} created successfully.`;
+                    }
+                } else { // Creating a brand new date
+                    const newDatePayload: FestivalDate = {
+                        ...(typedItem as FestivalDate),
+                        ...commonFields,
+                        ID: Date.now(),
+                        CREATED_ON: now,
+                        CREATED_BY: 1,
+                    };
+                    updated.push(newDatePayload);
+                    message = 'Festival date created successfully.';
+                }
+
                 await api.onUpdateFestivalDates(updated);
+                setFestivalDates(updated);
+                addToast(message);
+                closeModal();
+                return;
             }
             addToast(`${type.charAt(0).toUpperCase() + type.slice(1)} saved successfully.`);
             closeModal();
-            loadData();
         } catch (e) {
             console.error(e);
             addToast("Failed to save.", "error");
         }
     };
     
-    // Toggle Status
-    const handleToggle = async (type: 'religion' | 'festival' | 'date', id: number) => {
+    const handleToggleFestivalStatus = async (festival: Festival) => {
+        const newStatus = festival.STATUS === 1 ? 0 : 1;
         try {
-            if (type === 'religion') {
-                const updated = religions.map(i => i.ID === id ? { ...i, STATUS: i.STATUS === 1 ? 0 : 1 } : i);
-                await api.onUpdateReligions(updated);
-            } else if (type === 'festival') {
-                const updated = festivals.map(i => i.ID === id ? { ...i, STATUS: i.STATUS === 1 ? 0 : 1 } : i);
-                await api.onUpdateFestivals(updated);
-            } else if (type === 'date') {
-                const updated = festivalDates.map(i => i.ID === id ? { ...i, STATUS: i.STATUS === 1 ? 0 : 1 } : i);
-                await api.onUpdateFestivalDates(updated);
-            }
-            addToast("Status updated.");
-            loadData();
+            const updatedFestivals = festivals.map(f => f.ID === festival.ID ? { ...f, STATUS: newStatus } : f);
+            await api.onUpdateFestivals(updatedFestivals);
+            setFestivals(updatedFestivals);
+            addToast(`Festival status updated.`);
         } catch(e) {
+            addToast("Failed to update festival status.", "error");
+        }
+    }
+    
+    // Toggle Status
+    const handleToggle = async (type: 'religion' | 'festival', item: Religion | Festival) => {
+        const newStatus = item.STATUS === 1 ? 0 : 1;
+        try {
+            let updatedReligions = [...religions];
+            let updatedFestivals = [...festivals];
+            let message = '';
+
+            if (type === 'religion') {
+                const religion = item as Religion;
+                updatedReligions = religions.map(r => r.ID === religion.ID ? { ...r, STATUS: newStatus } : r);
+                
+                const affectedFestivalIds = festivals.filter(f => f.RELIGION_ID === religion.ID).map(f => f.ID);
+                updatedFestivals = festivals.map(f => affectedFestivalIds.includes(f.ID) ? { ...f, STATUS: newStatus } : f);
+                message = `Religion and associated items ${newStatus ? 'activated' : 'deactivated'}.`;
+
+                await Promise.all([
+                    api.onUpdateReligions(updatedReligions),
+                    api.onUpdateFestivals(updatedFestivals),
+                ]);
+                setReligions(updatedReligions);
+                setFestivals(updatedFestivals);
+            } else if (type === 'festival') {
+                const festival = item as Festival;
+                updatedFestivals = festivals.map(f => f.ID === festival.ID ? { ...f, STATUS: newStatus } : f);
+                message = `Festival status ${newStatus ? 'activated' : 'deactivated'}.`;
+                
+                await api.onUpdateFestivals(updatedFestivals);
+                setFestivals(updatedFestivals);
+            }
+            
+            addToast(message);
+        } catch (e) {
+            console.error(e);
             addToast("Failed to update status.", "error");
         }
     };
@@ -139,23 +238,12 @@ const ReligionAndFestivalPage: React.FC = () => {
     if (isLoading) return <div className="p-8 text-center text-slate-500 dark:text-slate-400">Loading...</div>;
 
     const renderTable = (
-        title: string, type: 'religion' | 'festival' | 'date', data: any[], columns: { header: string, accessor: (item: any) => React.ReactNode }[]
+        title: string, type: 'religion' | 'festival', data: any[], columns: { header: string, accessor: (item: any) => React.ReactNode }[]
     ) => (
         <div className="bg-white dark:bg-slate-800 shadow-md rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">{title}</h3>
-                { type !== 'date' && <Button onClick={() => openModal(type, null)}><Plus size={16} /> Add New {type.charAt(0).toUpperCase() + type.slice(1)}</Button>}
-                { type === 'date' && (
-                    <div className="flex items-center gap-2">
-                         <Select label="" value={yearFilter} onChange={e => setYearFilter(Number(e.target.value))}>
-                            {[...Array(5)].map((_, i) => <option key={i} value={new Date().getFullYear() + i - 2}>{new Date().getFullYear() + i - 2}</option>)}
-                        </Select>
-                        <Select label="" value={monthFilter} onChange={e => setMonthFilter(e.target.value)}>
-                            <option value="all">All Months</option>
-                            {[...Array(12)].map((_, i) => <option key={i} value={i}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>)}
-                        </Select>
-                    </div>
-                )}
+                <Button onClick={() => openModal(type, null)}><Plus size={16} /> Add New {type.charAt(0).toUpperCase() + type.slice(1)}</Button>
             </div>
             <div className="overflow-auto" style={{ maxHeight: '300px' }}>
                 <table className="min-w-full">
@@ -172,7 +260,7 @@ const ReligionAndFestivalPage: React.FC = () => {
                             <tr key={item.ID} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
                                 <td className="px-4 py-2 text-sm">{index + 1}</td>
                                 {columns.map(c => <td key={c.header} className="px-4 py-2 text-sm font-medium">{c.accessor(item)}</td>)}
-                                <td className="px-4 py-2"><ToggleSwitch enabled={item.STATUS === 1} onChange={() => handleToggle(type, item.ID)} /></td>
+                                <td className="px-4 py-2"><ToggleSwitch enabled={item.STATUS === 1} onChange={() => handleToggle(type, item)} /></td>
                                 <td className="px-4 py-2"><Button size="small" variant="light" className="!p-1.5" onClick={() => openModal(type, item)}><Edit2 size={14}/></Button></td>
                             </tr>
                         ))}
@@ -186,18 +274,85 @@ const ReligionAndFestivalPage: React.FC = () => {
         <div className="space-y-6">
             <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200">Religion & Festival Management</h2>
             <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="Search religions and festivals..." className="max-w-md"/>
-            {renderTable('religion', 'religion', filteredReligions, [{ header: 'Name', accessor: item => item.RELIGION }])}
-            {renderTable('festival', 'festival', filteredFestivals, [
+            {renderTable('Religions', 'religion', filteredReligions, [{ header: 'Name', accessor: item => item.RELIGION }])}
+            {renderTable('Festivals', 'festival', filteredFestivals, [
                 { header: 'Name', accessor: item => item.FEST_DESC },
                 { header: 'Religion', accessor: item => religionMap.get(item.RELIGION_ID) || <span className="italic text-slate-500">General</span> }
             ])}
-            {renderTable('date', 'date', filteredDates.filter(d => {
-                const date = new Date(d.FESTVEL_DATE);
-                return date.getFullYear() === yearFilter && (monthFilter === 'all' || date.getMonth() === Number(monthFilter));
-            }), [
-                { header: 'Festival', accessor: item => <span>{festivalMap.get(item.FEST_ID)} <span className="text-xs text-slate-400">({dateCountMap.get(item.FEST_ID)} Dates)</span></span> },
-                { header: 'Date', accessor: item => <div className="flex items-center gap-2">{new Date(item.FESTVEL_DATE).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })} <button onClick={() => openModal('date', {FEST_ID: item.FEST_ID})}><CalendarIcon size={14} className="text-slate-400 hover:text-blue-500"/></button></div> }
-            ])}
+            
+            <div className="bg-white dark:bg-slate-800 shadow-md rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">Festival Date</h3>
+                    <div className="flex items-center gap-2">
+                         <Select label="" value={yearFilter} onChange={e => setYearFilter(Number(e.target.value))}>
+                            {yearOptions.map(year => <option key={year} value={year}>{year}</option>)}
+                        </Select>
+                        <Select label="" value={monthFilter} onChange={e => setMonthFilter(e.target.value)}>
+                            <option value="all">All Months</option>
+                            {[...Array(12)].map((_, i) => <option key={i} value={i}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>)}
+                        </Select>
+                    </div>
+                </div>
+                <div className="overflow-auto" style={{ maxHeight: '300px' }}>
+                    <table className="min-w-full">
+                        <thead className="sticky top-0 bg-slate-50 dark:bg-slate-700">
+                            <tr>
+                                <th className="px-4 py-2 text-left text-xs font-bold w-12">ID</th>
+                                <th className="px-4 py-2 text-left text-xs font-bold">Festival</th>
+                                <th className="px-4 py-2 text-left text-xs font-bold">Date</th>
+                                <th className="px-4 py-2 text-left text-xs font-bold">Status</th>
+                                <th className="px-4 py-2 text-left text-xs font-bold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                            {festivalDateDisplayItems.length > 0 ? festivalDateDisplayItems.map((item, index) => {
+                                const religion = item.RELIGION_ID ? religions.find(r => r.ID === item.RELIGION_ID) : null;
+                                const isParentActive = (!religion || religion.STATUS === 1) && item.STATUS === 1;
+
+                                return (
+                                <tr key={item.ID} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                    <td className="px-4 py-2 text-sm">{index + 1}</td>
+                                    <td className="px-4 py-2 text-sm font-medium">
+                                        {item.FEST_DESC} <span className="text-xs text-slate-400">({dateCountMap.get(item.ID) || 0} Dates)</span>
+                                    </td>
+                                    <td className="px-4 py-2 text-sm font-medium">
+                                        <div className="flex items-center justify-between">
+                                            {item.dateObject ? (
+                                                <span>{new Date(item.dateObject.FESTVEL_DATE).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                                            ) : (
+                                                <span className="italic text-slate-400">No date set for {yearFilter}</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <ToggleSwitch 
+                                            enabled={isParentActive}
+                                            onChange={() => handleToggleFestivalStatus(item)}
+                                        />
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <Button 
+                                            size="small" 
+                                            variant="light" 
+                                            className="!p-1.5" 
+                                            onClick={() => openModal('date', item.dateObject || { FEST_ID: item.ID, FESTVEL_DATE: `${yearFilter}-01-01`, STATUS: 1 })}
+                                        >
+                                            {item.dateObject ? <Edit2 size={14}/> : <CalendarIcon size={14}/>}
+                                        </Button>
+                                    </td>
+                                </tr>
+                            )
+                            }) : (
+                                <tr>
+                                    <td colSpan={5} className="text-center py-8 text-slate-500 dark:text-slate-400">
+                                        No festivals found for the selected period.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <Modal isOpen={modalState.isOpen} onClose={closeModal} contentClassName="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-md">
                 <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
