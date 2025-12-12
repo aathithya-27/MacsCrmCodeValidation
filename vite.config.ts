@@ -6,8 +6,14 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       server: {
-        port: 3000,
+        // Change the port number here
+        port: 5173, 
         host: '0.0.0.0',
+        // --- ADD THIS BLOCK ---
+        // This is the fix for HMR in Docker/WSL/Networked environments
+        watch: {
+          usePolling: true,
+        },
       },
       plugins: [react()],
       define: {
