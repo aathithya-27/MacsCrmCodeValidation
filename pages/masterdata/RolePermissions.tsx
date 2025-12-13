@@ -19,7 +19,6 @@ const RolePermissionsPage: React.FC = () => {
   const [loadingPerms, setLoadingPerms] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Strict Mode Compliance: Logic to prevent setting state on unmounted components
   useEffect(() => {
     let isMounted = true;
 
@@ -38,7 +37,6 @@ const RolePermissionsPage: React.FC = () => {
         const newLocalPerms: Record<string, AccessLevel> = {};
         const newIds: Record<string, number | string> = {};
         
-        // Initialize all modules to 'None'
         MODULES.forEach(m => { newLocalPerms[m] = 'None'; });
         
         if (res.data && Array.isArray(res.data)) {
@@ -69,7 +67,6 @@ const RolePermissionsPage: React.FC = () => {
     if (!selectedRoleId) return;
     setSaving(true);
     try {
-      // Using Promise.all for parallel execution - efficient!
       const promises = MODULES.map(async (moduleName) => {
         const currentLevel = localPermissions[moduleName];
         const existingId = permissionIds[moduleName];
@@ -92,7 +89,6 @@ const RolePermissionsPage: React.FC = () => {
       
       await Promise.all(promises);
       
-      // Refresh IDs after save
       const res = await rolePermissionApi.getByRoleId(selectedRoleId);
       if (res.data) {
           const newIds: Record<string, number | string> = {};

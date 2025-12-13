@@ -18,7 +18,6 @@ const BranchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [idSuffix, setIdSuffix] = useState('');
 
-  // Engine Hook
   const crud = useMasterCrud<Branch>({
     api: branchApi,
     refetch: refetchBranches,
@@ -27,12 +26,10 @@ const BranchPage: React.FC = () => {
     defaults: { status: 1, comp_id: 1001 }
   });
 
-  // Effect: Sync ID generation when editing/creating
   useEffect(() => {
     if (crud.isModalOpen && !crud.currentItem.id && idSuffix) {
        crud.setCurrentItem(prev => ({ ...prev, branch_id: `FIN01-${idSuffix.toUpperCase()}` }));
     } else if (crud.isModalOpen && crud.currentItem.id) {
-       // Extract suffix when opening edit
        const parts = String(crud.currentItem.branch_id || '').split('-');
        if (parts.length > 1 && parts[1] !== idSuffix) setIdSuffix(parts[1]);
     } else if (!crud.isModalOpen) {
@@ -40,7 +37,6 @@ const BranchPage: React.FC = () => {
     }
   }, [idSuffix, crud.isModalOpen, crud.currentItem.id]);
 
-  // Derived State for Cascading Dropdowns - Only show Active Status
   const current = crud.currentItem;
   const filteredStates = useMemo(() => states?.filter(s => s.country_id == current.country_id && s.status === 1) || [], [states, current.country_id]);
   const filteredDistricts = useMemo(() => districts?.filter(d => d.state_id == current.state_id && d.status === 1) || [], [districts, current.state_id]);
@@ -55,7 +51,6 @@ const BranchPage: React.FC = () => {
     );
   }, [branches, searchQuery]);
 
-  // Inject Location Names before saving
   const handleSaveWithLocationNames = async () => {
       const countryObj = countries?.find(c => c.id == current.country_id);
       const cityObj = cities?.find(c => c.id == current.city_id);
@@ -68,14 +63,13 @@ const BranchPage: React.FC = () => {
           state: stateObj?.state 
       }));
       
-      // Small delay to allow state update before save
       setTimeout(crud.handleSave, 0); 
   };
 
   return (
     <MasterDataLayout title="Manage Branch">
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col h-[calc(100vh-12rem)]">
-        {/* Search Bar matching design */}
+        {}
         <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-col md:flex-row gap-4 items-center">
           <Input 
             className="flex-1 w-full"
@@ -106,7 +100,7 @@ const BranchPage: React.FC = () => {
       >
         <div className="space-y-6">
           
-          {/* Section 1: Branch Details */}
+          {}
           <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
              <h4 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Branch Details</h4>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -126,7 +120,7 @@ const BranchPage: React.FC = () => {
              </div>
           </div>
 
-          {/* Section 2: Address Details */}
+          {}
           <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
              <h4 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Address Details</h4>
              <div className="space-y-4">
@@ -142,9 +136,9 @@ const BranchPage: React.FC = () => {
                         onChange={e => crud.setCurrentItem({
                             ...crud.currentItem, 
                             country_id: e.target.value, 
-                            state_id: undefined, 
-                            district_id: undefined, 
-                            city_id: undefined, 
+                            state_id: undefined,
+                            district_id: undefined,
+                            city_id: undefined,
                             area_id: undefined
                         })} 
                    />
@@ -160,7 +154,7 @@ const BranchPage: React.FC = () => {
              </div>
           </div>
 
-          {/* Section 3: Tax Info */}
+          {}
           <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
              <h4 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Tax Info</h4>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

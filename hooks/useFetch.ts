@@ -15,7 +15,6 @@ export function useFetch<T>(endpoint: string | null, options: UseFetchOptions<T>
   const [loading, setLoading] = useState<boolean>(enabled && !!endpoint && !initialData);
   const [error, setError] = useState<string | null>(null);
   
-  // Use ref to keep latest options without triggering re-renders
   const optionsRef = useRef(options);
   useEffect(() => { optionsRef.current = options; }, [options]);
 
@@ -23,9 +22,6 @@ export function useFetch<T>(endpoint: string | null, options: UseFetchOptions<T>
     setLoading(true);
     setError(null);
     try {
-      // Note: passing signal to apiClient requires the client to support it. 
-      // Assuming underlying axios call can accept signal via config if passed properly.
-      // For now, we handle the 'mounted' state check in the effect which is the React way.
       const res = await apiClient.get<T>(url);
       
       if (signal?.aborted) return;

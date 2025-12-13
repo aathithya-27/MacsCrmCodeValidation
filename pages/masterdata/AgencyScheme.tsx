@@ -10,18 +10,15 @@ import toast from 'react-hot-toast';
 const AgencySchemePage: React.FC = () => {
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   
-  // Fetch dependencies for Scheme dropdowns
   const { data: types } = useFetch<InsuranceType[]>('/insuranceTypes');
   const { data: subTypes } = useFetch<InsuranceSubType[]>('/insuranceSubTypes');
   const { data: schemes, refetch: refetchSchemes } = useFetch<Scheme[]>('/schemes');
 
-  // Custom Cascade Status Logic
   const handleToggleAgency = async (item: Agency) => {
     const newStatus = item.status === 1 ? 0 : 1;
     try {
         await agencyApi.patchAgency(item.id!, { status: newStatus });
         
-        // Cascade to Schemes
         if (schemes) {
             const childSchemes = schemes.filter(s => s.agency_id == item.id && s.status !== newStatus);
             await Promise.all(childSchemes.map(s => agencyApi.patchScheme(s.id!, { status: newStatus })));
@@ -41,7 +38,7 @@ const AgencySchemePage: React.FC = () => {
     <MasterDataLayout title="Agency and Scheme">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full pb-8">
         
-        {/* Left: Agencies List */}
+        {}
         <div className="md:col-span-1">
           <GenericTableCrud<Agency>
             title="Agencies"
@@ -56,7 +53,7 @@ const AgencySchemePage: React.FC = () => {
           />
         </div>
 
-        {/* Right: Schemes List (Filtered) */}
+        {}
         <div className="md:col-span-2">
           {selectedAgency ? (
              <div className="contents" key={selectedAgency.id}>

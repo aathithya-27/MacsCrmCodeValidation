@@ -14,7 +14,6 @@ const LeadReferralPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Set<number | string>>(new Set());
 
-  // Using our new engine hook
   const crud = useMasterCrud<LeadSource>({
     api: leadSourceApi,
     refetch,
@@ -23,13 +22,11 @@ const LeadReferralPage: React.FC = () => {
     initialState: { client_id: 1, individual: false }
   });
 
-  // Calculate tree data only when sourceData changes (Performance optimization)
   const treeData = useMemo(() => {
     if (!sourceData) return [];
     return transformToTree(sourceData);
   }, [sourceData]);
 
-  // Auto-expand all nodes on initial load
   useEffect(() => {
     if (sourceData) {
       setExpandedNodes(new Set(sourceData.map(d => d.id!)));
@@ -46,11 +43,9 @@ const LeadReferralPage: React.FC = () => {
     crud.handleOpenModal({ parent_id: parentId } as unknown as LeadSource);
   };
 
-  // Custom Cascade Toggle (Handles both Activation and Deactivation for entire hierarchy)
   const handleToggleStatus = async (item: LeadSource) => {
     const newStatus = item.status === 1 ? 0 : 1;
     
-    // Recursive function to find all descendant IDs
     const getDescendantsIds = (pid: number | string, allItems: LeadSource[]): (number | string)[] => {
       const children = allItems.filter(d => d.parent_id == pid);
       let ids = children.map(c => c.id!);
@@ -63,12 +58,9 @@ const LeadReferralPage: React.FC = () => {
     const descendantsIds = sourceData ? getDescendantsIds(item.id!, sourceData) : [];
     const idsToUpdate = [item.id!, ...descendantsIds];
 
-    // Optimistic Update
     setData(prev => prev?.map(d => idsToUpdate.includes(d.id!) ? { ...d, status: newStatus } : d) || []);
 
-    // API Update
     try {
-        // Parallel update for better performance
         await Promise.all(idsToUpdate.map(id => leadSourceApi.patch(id, { status: newStatus })));
         
         const message = newStatus === 1 
@@ -81,7 +73,6 @@ const LeadReferralPage: React.FC = () => {
     }
   };
 
-  // Recursive Tree Item Component
   const TreeItem: React.FC<{ node: LeadSource; level: number }> = ({ node, level }) => {
      if (searchQuery && !node.ref_desc.toLowerCase().includes(searchQuery.toLowerCase())) return null;
      

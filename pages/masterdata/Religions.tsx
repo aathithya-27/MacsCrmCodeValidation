@@ -60,7 +60,7 @@ const ReligionsPage: React.FC = () => {
             )}
         </div>
 
-        {/* 3. Dates */}
+        {}
         <div className="flex flex-col h-full">
             {selectedFestival ? (
                 <div className="contents" key={selectedFestival.id}>

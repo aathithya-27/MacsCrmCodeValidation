@@ -29,7 +29,6 @@ const RolePage: React.FC = () => {
 
   const handleToggleAdvisor = async (item: Role) => {
     const newVal = item.is_advisor_role === 1 ? 0 : 1;
-    // Optimistic Update
     setData(prev => prev?.map(r => r.id === item.id ? { ...r, is_advisor_role: newVal } : r) || []);
     
     try {
@@ -42,7 +41,6 @@ const RolePage: React.FC = () => {
   };
 
   const handleFormSubmit = async (data: any) => {
-    // Transform boolean back to number
     const payload = {
         ...data,
         is_advisor_role: data.is_advisor_role ? 1 : 0
@@ -67,7 +65,7 @@ const RolePage: React.FC = () => {
     <MasterDataLayout title="Manage Roles">
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 flex flex-col h-[calc(100vh-12rem)]">
         
-        {/* Header */}
+        {}
         <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
           <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">Role List</h3>
           <div className="flex gap-3 w-full sm:w-auto">
@@ -84,7 +82,7 @@ const RolePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Table */}
+        {}
         <DataTable 
           data={filteredData}
           columns={[
@@ -121,7 +119,6 @@ const RolePage: React.FC = () => {
           ]}
           defaultValues={{
               ...crud.currentItem,
-              // Convert number to boolean for the form
               is_advisor_role: crud.currentItem.is_advisor_role === 1
           }}
           onSubmit={handleFormSubmit}

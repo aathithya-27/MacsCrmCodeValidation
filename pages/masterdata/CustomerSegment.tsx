@@ -7,17 +7,14 @@ import { customerSegmentApi } from '../../services/masterDataApi/customerSegment
 import toast from 'react-hot-toast';
 
 const CustomerSegmentPage: React.FC = () => {
-  // We fetch categories here to pass them as options to the Sub-Category dropdown
   const { data: categories, refetch: refetchCategories } = useFetch<CustomerCategory[]>('/customerCategories');
   const { data: subCategories, refetch: refetchSubCategories } = useFetch<CustomerSubCategory[]>('/customerSubCategories');
 
-  // Custom logic for cascading deactivation
   const handleToggleCategory = async (item: CustomerCategory) => {
     const newStatus = item.status === 1 ? 0 : 1;
     try {
         await customerSegmentApi.patchCategory(item.id!, { status: newStatus });
         
-        // Cascade to sub-categories
         if (subCategories) {
             const children = subCategories.filter(s => s.cust_cate_id == item.id && s.status !== newStatus);
             await Promise.all(children.map(child => 
@@ -25,12 +22,12 @@ const CustomerSegmentPage: React.FC = () => {
             ));
             if (children.length > 0) {
                 toast.success(`Updated Category and ${children.length} sub-categories`);
-                refetchSubCategories(); // Refresh sub-cat list
+                refetchSubCategories();
             } else {
                 toast.success(newStatus === 1 ? 'Activated' : 'Deactivated');
             }
         }
-        refetchCategories(); // Refresh category list
+        refetchCategories();
     } catch (e) {
         toast.error("Failed to update status");
     }
@@ -39,7 +36,7 @@ const CustomerSegmentPage: React.FC = () => {
   return (
     <MasterDataLayout title="Customer Segment Management">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full pb-8">
-        {/* Top Row */}
+        {}
         <GenericTableCrud<CustomerCategory>
           title="Customer Category"
           endpoint="/customerCategories"
@@ -47,7 +44,7 @@ const CustomerSegmentPage: React.FC = () => {
           fields={[{ name: 'customer_category', label: 'Category Name', type: 'text', required: true }]}
           defaults={{ comp_id: 1001 }}
           searchKeys={['customer_category']}
-          onStatusChange={handleToggleCategory} // Use custom cascade logic
+          onStatusChange={handleToggleCategory}
         />
 
         <GenericTableCrud<CustomerSubCategory>
@@ -71,7 +68,7 @@ const CustomerSegmentPage: React.FC = () => {
           searchKeys={['cust_sub_cate']}
         />
 
-        {/* Bottom Row */}
+        {}
         <GenericTableCrud<CustomerGroup>
           title="Customer Group"
           endpoint="/customerGroups"

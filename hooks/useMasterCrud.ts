@@ -82,7 +82,6 @@ export function useMasterCrud<T extends { id?: number | string; status?: number 
     if (!api.patch) return;
     const newStatus = item.status === 1 ? 0 : 1;
     
-    // Optimistic UI update to make the app feel snappier
     if (updateLocalData) {
         updateLocalData((prev) => prev?.map((i) => i.id === item.id ? { ...i, status: newStatus } : i) || []);
     }
@@ -92,7 +91,7 @@ export function useMasterCrud<T extends { id?: number | string; status?: number 
       toast.success(newStatus === 1 ? 'Activated' : 'Deactivated');
     } catch (error) {
       toast.error('Failed to update status');
-      refetch(); // Revert on failure
+      refetch();
     }
   };
 
