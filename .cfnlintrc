@@ -1,0 +1,8 @@
+ignore_checks:
+- E0000
+ignore_bad_template: true
+include_checks: []
+configure_rules: {}
+ignore_templates:
+- server/database.json
+- "**/server/**/*.json"
