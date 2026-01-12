@@ -14,13 +14,14 @@ const ReligionsPage: React.FC = () => {
 
   const { data: religions } = useFetch<Religion[]>(RELIGION);
   
+  // Need to pass active religion list to festival form
   const activeReligions = religions?.filter(r => r.status === 1) || [];
 
   return (
     <MasterDataLayout title="Religions & Festivals">
       <div className="flex flex-col gap-6 h-full pb-8">
         
-        {}
+        {/* 1. Religion */}
         <div>
           <GenericTableCrud<Religion>
             title="Religions"
@@ -34,7 +35,7 @@ const ReligionsPage: React.FC = () => {
           />
         </div>
 
-        {}
+        {/* 2. Festival */}
         <div>
             {selectedReligion ? (
                 <div className="contents" key={selectedReligion.id}>
@@ -64,7 +65,7 @@ const ReligionsPage: React.FC = () => {
             )}
         </div>
 
-        {}
+        {/* 3. Dates */}
         <div>
             {selectedFestival ? (
                 <div className="contents" key={selectedFestival.id}>

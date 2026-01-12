@@ -3,23 +3,18 @@ import { apiClient } from '../apiClient';
 import { Agency, Scheme } from '../../types';
 import { API_ENDPOINTS } from '../../config/api.config';
 
-const AGENCY_ENDPOINT = API_ENDPOINTS.MASTER_DATA.AGENCY;
-const SCHEME_ENDPOINT = API_ENDPOINTS.MASTER_DATA.SCHEME;
-
 export const agencyApi = {
-  // Agency
-  getAllAgencies: () => apiClient.get<Agency[]>(AGENCY_ENDPOINT),
-  getAgencyById: (id: number | string) => apiClient.get<Agency>(`${AGENCY_ENDPOINT}/${id}`),
-  createAgency: (data: Agency) => apiClient.post<Agency>(AGENCY_ENDPOINT, data),
-  updateAgency: (id: number | string, data: Agency) => apiClient.put<Agency>(`${AGENCY_ENDPOINT}/${id}`, data),
-  patchAgency: (id: number | string, data: Partial<Agency>) => apiClient.patch<Agency>(`${AGENCY_ENDPOINT}/${id}`, data),
-  deleteAgency: (id: number | string) => apiClient.delete<any>(`${AGENCY_ENDPOINT}/${id}`),
+  // Generic Agency/AMC
+  getAgencies: (endpoint: string) => apiClient.get<Agency[]>(endpoint),
+  createAgency: (endpoint: string, data: Agency) => apiClient.post<Agency>(endpoint, data),
+  updateAgency: (endpoint: string, id: number | string, data: Agency) => apiClient.put<Agency>(`${endpoint}/${id}`, data),
+  patchAgency: (endpoint: string, id: number | string, data: Partial<Agency>) => apiClient.patch<Agency>(`${endpoint}/${id}`, data),
+  deleteAgency: (endpoint: string, id: number | string) => apiClient.delete<any>(`${endpoint}/${id}`),
 
-  // Scheme
-  getAllSchemes: () => apiClient.get<Scheme[]>(SCHEME_ENDPOINT),
-  getSchemeById: (id: number | string) => apiClient.get<Scheme>(`${SCHEME_ENDPOINT}/${id}`),
-  createScheme: (data: Scheme) => apiClient.post<Scheme>(SCHEME_ENDPOINT, data),
-  updateScheme: (id: number | string, data: Scheme) => apiClient.put<Scheme>(`${SCHEME_ENDPOINT}/${id}`, data),
-  patchScheme: (id: number | string, data: Partial<Scheme>) => apiClient.patch<Scheme>(`${SCHEME_ENDPOINT}/${id}`, data),
-  deleteScheme: (id: number | string) => apiClient.delete<any>(`${SCHEME_ENDPOINT}/${id}`),
+  // Generic Scheme/MF-Scheme
+  getSchemes: (endpoint: string) => apiClient.get<Scheme[]>(endpoint),
+  createScheme: (endpoint: string, data: Scheme) => apiClient.post<Scheme>(endpoint, data),
+  updateScheme: (endpoint: string, id: number | string, data: Scheme) => apiClient.put<Scheme>(`${endpoint}/${id}`, data),
+  patchScheme: (endpoint: string, id: number | string, data: Partial<Scheme>) => apiClient.patch<Scheme>(`${endpoint}/${id}`, data),
+  deleteScheme: (endpoint: string, id: number | string) => apiClient.delete<any>(`${endpoint}/${id}`),
 };

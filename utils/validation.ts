@@ -35,7 +35,7 @@ export const validateForm = (data: any, rules: Record<string, Function[]>) => {
       const result = rule(value);
       if (typeof result === 'string') {
         errors[field] = result;
-        break; // Stop at first error for this field
+        break;
       }
     }
   });

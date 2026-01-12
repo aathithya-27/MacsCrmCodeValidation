@@ -32,7 +32,7 @@ interface GenericTableCrudProps<T> {
   selectedId?: number | string;
   emptyMessage?: string;
   enablePagination?: boolean;
-  compact?: boolean; // New prop for narrow layouts
+  compact?: boolean; 
 }
 
 export function GenericTableCrud<T extends { id?: number | string; status?: number }>({
@@ -52,7 +52,6 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
   enablePagination = true,
   compact = false
 }: GenericTableCrudProps<T>) {
-  // Use SWR by providing a cacheKey
   const { data: rawData, loading, isRefetching, refetch, setData } = useFetch<T[]>(endpoint, { 
     cacheKey: endpoint 
   });
@@ -118,7 +117,6 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
       }
 
       if (editingItem?.id) {
-        // Optimistic update handled via re-fetch logic usually, but here we wait for server
         await api.update(editingItem.id, { ...editingItem, ...payload });
         toast.success('Updated successfully');
       } else {
@@ -126,7 +124,7 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
         toast.success('Created successfully');
       }
       setIsModalOpen(false);
-      refetch(); // This will update the SWR cache
+      refetch();
     } catch (error: any) {
       toast.error(error.message || 'Operation failed');
     } finally {

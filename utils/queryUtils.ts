@@ -10,8 +10,6 @@ export const toQueryString = (params: Record<string, any>): string => {
   return parts.length > 0 ? `?${parts.join('&')}` : '';
 };
 
-// Simple in-memory cache registry
-// We store promises to dedup in-flight requests and data for SWR
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -23,7 +21,6 @@ export const globalCache = {
   get: <T>(key: string): T | null => {
     const entry = cacheRegistry.get(key);
     if (!entry) return null;
-    // Default 5 minute cache for master data
     if (Date.now() - entry.timestamp > 5 * 60 * 1000) {
       cacheRegistry.delete(key);
       return null;

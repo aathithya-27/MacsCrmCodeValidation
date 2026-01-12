@@ -21,8 +21,14 @@ export const API_ENDPOINTS = {
     COMPANY: '/companyMaster',
     BRANCH: '/branches',
     BUSINESS_VERTICAL: '/businessVerticals',
+    
+    // Insurance Master
     AGENCY: '/agencies',
     SCHEME: '/schemes',
+
+    // Mutual Fund Master (Separated)
+    AMC: '/amcs',
+    MF_SCHEME: '/mfSchemes',
     
     // HR & Access Control
     DESIGNATION: '/designations',
@@ -36,6 +42,10 @@ export const API_ENDPOINTS = {
     POLICY_FIELD: '/policyFields',
     POLICY_DOCUMENT: '/policyDocuments',
     DOCUMENT_MASTER: '/documentMasters',
+
+    // Mutual Fund Configuration
+    MUTUAL_FUND_PROCESS: '/mutualFundProcessFlows',
+    MUTUAL_FUND_FIELD: '/mutualFundFields',
     
     // Geography
     COUNTRY: '/countries',

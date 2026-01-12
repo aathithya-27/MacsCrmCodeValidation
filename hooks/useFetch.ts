@@ -8,18 +8,16 @@ interface UseFetchOptions<T> {
   onError?: (error: string) => void;
   initialData?: T;
   enabled?: boolean;
-  cacheKey?: string; // If provided, enables SWR caching
+  cacheKey?: string;
   staleTime?: number; 
 }
 
 export function useFetch<T>(endpoint: string | null, options: UseFetchOptions<T> = {}) {
   const { onSuccess, onError, initialData, enabled = true, cacheKey } = options;
   
-  // Try to get from cache first if a key is provided
   const cachedData = cacheKey || endpoint ? globalCache.get<T>(cacheKey || endpoint!) : null;
 
   const [data, setData] = useState<T | null>(cachedData || initialData || null);
-  // If we have cached data, we are not "loading" in the blocking sense, but we might be "fetching" in background
   const [loading, setLoading] = useState<boolean>(!cachedData && enabled && !!endpoint && !initialData);
   const [isRefetching, setIsRefetching] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +37,6 @@ export function useFetch<T>(endpoint: string | null, options: UseFetchOptions<T>
 
       if (res.status) {
         setData(res.data);
-        // Update cache
         if (cacheKey || endpoint) {
           globalCache.set(cacheKey || endpoint!, res.data);
         }
@@ -68,7 +65,6 @@ export function useFetch<T>(endpoint: string | null, options: UseFetchOptions<T>
     const controller = new AbortController();
 
     if (endpoint && enabled) {
-      // SWR Logic: If we have data, fetch in background. If not, fetch immediately (blocking load).
       const hasData = !!data; 
       fetchData(endpoint, controller.signal, hasData);
     } else {
@@ -85,7 +81,6 @@ export function useFetch<T>(endpoint: string | null, options: UseFetchOptions<T>
     return Promise.resolve();
   }, [endpoint, fetchData]);
 
-  // Expose setData so local optimistic updates can modify the state/cache
   const mutate = (newData: T | ((prev: T | null) => T | null)) => {
     setData((prev) => {
         const updated = typeof newData === 'function' ? (newData as any)(prev) : newData;

@@ -1,3 +1,4 @@
+
 import { apiClient } from '../apiClient';
 import { API_ENDPOINTS } from '../../config/api.config';
 
@@ -6,7 +7,8 @@ export interface TaskStatus {
   comp_id: number;
   status_name: string;
   color_code?: string;
-  is_default?: boolean;
+  is_initial?: boolean;
+  is_end?: boolean;
   status: number;
 }
 
@@ -18,4 +20,5 @@ export const taskStatusApi = {
   create: (data: TaskStatus) => apiClient.post<TaskStatus>(ENDPOINT, data),
   update: (id: number | string, data: TaskStatus) => apiClient.put<TaskStatus>(`${ENDPOINT}/${id}`, data),
   patch: (id: number | string, data: Partial<TaskStatus>) => apiClient.patch<TaskStatus>(`${ENDPOINT}/${id}`, data),
+  delete: (id: number | string) => apiClient.delete<any>(`${ENDPOINT}/${id}`),
 };

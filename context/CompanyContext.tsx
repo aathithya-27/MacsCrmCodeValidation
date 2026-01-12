@@ -17,7 +17,6 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const fetchCompany = async () => {
     try {
-      // Defaulting to Company ID 1 as per current application logic
       const response = await companyMasterApi.getById(1);
       if (response && response.data) {
         setCompany(response.data);
@@ -33,7 +32,6 @@ export const CompanyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     fetchCompany();
   }, []);
 
-  // Update Document Title when company name changes
   useEffect(() => {
     if (company?.comp_name) {
       document.title = `${company.comp_name} - Finroots CRM`;

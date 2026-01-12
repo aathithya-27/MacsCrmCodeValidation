@@ -1,11 +1,12 @@
 
-
+// API Response Wrapper
 export interface ApiResponse<T> {
   status: boolean;
   message?: string;
   data: T;
 }
 
+// Master Data: Company Master
 export interface CompanyMaster {
   id?: number | string;
   comp_id: number;
@@ -32,6 +33,7 @@ export interface CompanyMaster {
   status: number;
 }
 
+// Master Data: Branch
 export interface Branch {
   id?: number | string;
   branch_id: number | string;
@@ -57,6 +59,7 @@ export interface Branch {
   modified_by?: number;
   status: number;
   
+  // Helpers for display
   country?: string;
   district?: string;
   state?: string; 
@@ -64,6 +67,7 @@ export interface Branch {
   area?: string;
 }
 
+// Master Data: Business Vertical
 export interface BusinessVertical {
   id?: number | string;
   client_id: number;
@@ -76,12 +80,14 @@ export interface BusinessVertical {
   status: number;
 }
 
+// Master Data: Document Master
 export interface DocumentMaster {
   id?: number | string;
   doc_name: string;
   status: number;
 }
 
+// Master Data: Designation
 export interface Designation {
   id?: number | string;
   comp_id: number;
@@ -95,6 +101,7 @@ export interface Designation {
   status: number;
 }
 
+// Master Data: Role
 export interface Role {
   id?: number | string;
   comp_id: number;
@@ -109,6 +116,7 @@ export interface Role {
   status: number;
 }
 
+// Role Permission
 export interface RolePermission {
   id?: number | string;
   role_id: number | string;
@@ -116,6 +124,7 @@ export interface RolePermission {
   access_level: 'None' | 'View' | 'Edit' | 'Full';
 }
 
+// Financial Year
 export interface FinancialYear {
   id?: number | string;
   comp_id: number;
@@ -125,6 +134,7 @@ export interface FinancialYear {
   status: number;
 }
 
+// Numbering Rules (Voucher/Receipt)
 export interface NumberingRule {
   id?: number | string;
   comp_id: number;
@@ -136,6 +146,7 @@ export interface NumberingRule {
   status: number;
 }
 
+// Religion & Festivals
 export interface Religion {
   id?: number | string;
   comp_id: number;
@@ -159,6 +170,7 @@ export interface FestivalDate {
   status: number;
 }
 
+// Lead & Relationship Masters
 export interface LeadStage {
   id?: number | string;
   comp_id: number;
@@ -184,6 +196,7 @@ export interface LeadSource {
   children?: LeadSource[];
 }
 
+// Bank Master
 export interface BankMaster {
   id?: number | string;
   comp_id: number;
@@ -198,6 +211,7 @@ export interface AccountType {
   status: number;
 }
 
+// Gender
 export interface Gender {
   id?: number | string;
   comp_id: number;
@@ -205,6 +219,7 @@ export interface Gender {
   status: number;
 }
 
+// Customer Segment Management
 export interface CustomerCategory {
   id?: number | string;
   comp_id: number;
@@ -234,6 +249,7 @@ export interface CustomerType {
   status: number;
 }
 
+// Type & Gift Management
 export interface Gift {
   id?: number | string;
   gift_name: string;
@@ -258,6 +274,7 @@ export interface PremiumTier {
   status: number;
 }
 
+// --- Account's Category Management (New) ---
 export interface AccountCategory {
   id?: number | string;
   comp_id: number;
@@ -283,6 +300,7 @@ export interface AccountHead {
   status: number;
 }
 
+// --- Route Master ---
 export interface Route {
   id?: number | string;
   comp_id: number;
@@ -290,6 +308,7 @@ export interface Route {
   status: number;
 }
 
+// --- Marital Master ---
 export interface MaritalStatus {
   id?: number | string;
   comp_id: number;
@@ -297,6 +316,7 @@ export interface MaritalStatus {
   status: number;
 }
 
+// Policy Config
 export interface InsuranceType {
   id?: number | string;
   client_id: number;
@@ -337,6 +357,26 @@ export interface PolicyField {
   status: number;
 }
 
+// Mutual Fund Config
+export interface MutualFundProcessFlow {
+  id?: number | string;
+  comp_id: number;
+  client_id: number;
+  process_desc: string;
+  seq_no: number;
+  status: number;
+}
+
+export interface MutualFundField {
+  id?: number | string;
+  comp_id: number;
+  field_label: string;
+  group_name?: string;
+  column_span: number;
+  field_type: string;
+  status: number;
+}
+
 export interface PolicyDocument {
   id?: number | string;
   insurance_type_id: number | string;
@@ -345,9 +385,11 @@ export interface PolicyDocument {
   is_mandatory: boolean;
 }
 
+// Agency & Scheme
 export interface Agency {
   id?: number | string;
   comp_id: number;
+  business_vertical_id?: number | string; // To filter by Insurance or MF
   agency_name: string;
   status: number;
 }
@@ -356,12 +398,14 @@ export interface Scheme {
   id?: number | string;
   comp_id: number;
   scheme_name: string;
-  insurance_type_id: number | string;
+  insurance_type_id?: number | string;
   insurance_sub_type_id?: number | string;
+  category?: string; // For Mutual Funds (Equity, Debt, etc.)
   agency_id: number | string;
   status: number;
 }
 
+// Geography Entities
 export interface Country {
   id?: number | string;
   country_name: string;

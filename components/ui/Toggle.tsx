@@ -9,7 +9,6 @@ interface ToggleProps {
 }
 
 export const Toggle: React.FC<ToggleProps> = ({ checked, onChange, disabled, label, size = 'md' }) => {
-  // Bolder Dimensions
   const height = size === 'sm' ? 'h-6 w-11' : 'h-7 w-12';
   const dotSize = size === 'sm' ? 'h-4 w-4' : 'h-5 w-5';
   const translate = size === 'sm' ? 'translate-x-5' : 'translate-x-5';

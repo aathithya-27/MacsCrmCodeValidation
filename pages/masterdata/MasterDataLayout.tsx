@@ -56,10 +56,7 @@ const MasterDataLayout: React.FC<MasterDataLayoutProps> = ({ children, title }) 
   const masterDataMenu = [
     { name: 'Company Master', path: '/master-data/company', icon: Building2 },
     { name: 'Branch', path: '/master-data/branch', icon: GitBranch },
-    { name: 'Business Vertical', path: '/master-data/business', icon: Briefcase },
-    { name: 'Policy Configuration', path: '/master-data/policy', icon: Settings2 },
-    { name: 'Agency and Scheme', path: '/master-data/agency', icon: Shield },
-    { name: 'Mutual Funds', path: '/master-data/mutual-funds', icon: CreditCard },
+    { name: 'Business Vertical', path: '/master-data/business', icon: Briefcase },    { name: 'Agency and Scheme', path: '/master-data/agency', icon: Shield },
     { name: 'Designation', path: '/master-data/designation', icon: Users },
     { name: 'Role', path: '/master-data/role', icon: Users },
     { name: 'Role Permissions', path: '/master-data/permissions', icon: Shield },
@@ -84,7 +81,7 @@ const MasterDataLayout: React.FC<MasterDataLayoutProps> = ({ children, title }) 
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 lg:items-start h-full">
-      {}
+      {/* Mobile/Tablet Dropdown Navigation (< Large Screens) */}
       <div className="lg:hidden w-full mb-4 flex-shrink-0">
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Select Master Data Module</label>
         <div className="relative">
@@ -123,7 +120,7 @@ const MasterDataLayout: React.FC<MasterDataLayoutProps> = ({ children, title }) 
         </div>
       </div>
 
-      {}
+      {/* Desktop Sidebar for Master Data (>= Large Screens) */}
       <div className="hidden lg:flex w-64 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 flex-col sticky top-0 max-h-[calc(100vh-6rem)]">
         <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
           <h2 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
@@ -156,7 +153,7 @@ const MasterDataLayout: React.FC<MasterDataLayoutProps> = ({ children, title }) 
         </div>
       </div>
 
-      {}
+      {/* Content Area */}
       <div className="flex-1 min-w-0 w-full">
         <div className="mb-4 hidden lg:block">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-white">{title}</h2>

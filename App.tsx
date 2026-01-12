@@ -6,7 +6,6 @@ import MainLayout from './components/Layout/MainLayout';
 import CompanyMasterPage from './pages/masterdata/CompanyMaster';
 import BranchPage from './pages/masterdata/Branch';
 import BusinessVerticalPage from './pages/masterdata/BusinessVertical';
-import PolicyConfigurationPage from './pages/masterdata/PolicyConfiguration';
 import DocumentMasterPage from './pages/masterdata/DocumentMaster';
 import AgencySchemePage from './pages/masterdata/AgencyScheme';
 import GeographyPage from './pages/masterdata/Geography';
@@ -26,7 +25,6 @@ import RouteMasterPage from './pages/masterdata/RouteMaster';
 import MaritalStatusMasterPage from './pages/masterdata/MaritalStatusMaster';
 import AccountsCategoryPage from './pages/masterdata/AccountsCategory';
 import TaskStatusPage from './pages/masterdata/TaskStatus';
-import UnderConstruction from './pages/masterdata/UnderConstruction';
 import { ThemeProvider } from './context/ThemeContext';
 import { CompanyProvider } from './context/CompanyContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -51,7 +49,6 @@ const App: React.FC = () => {
                 <Route path="/master-data/company" element={<CompanyMasterPage />} />
                 <Route path="/master-data/branch" element={<BranchPage />} />
                 <Route path="/master-data/business" element={<BusinessVerticalPage />} />
-                <Route path="/master-data/policy" element={<PolicyConfigurationPage />} />
                 <Route path="/master-data/documents" element={<DocumentMasterPage />} />
                 <Route path="/master-data/agency" element={<AgencySchemePage />} />
                 <Route path="/master-data/geography" element={<GeographyPage />} />
@@ -76,8 +73,6 @@ const App: React.FC = () => {
                 {/* Accounts & Task */}
                 <Route path="/master-data/accounts-category" element={<AccountsCategoryPage />} />
                 <Route path="/master-data/task-status" element={<TaskStatusPage />} />
-                
-                <Route path="/master-data/mutual-funds" element={<UnderConstruction title="Mutual Funds" />} />
 
                 {/* Redirects */}
                 <Route path="/master-data" element={<Navigate to="/master-data/company" replace />} />
