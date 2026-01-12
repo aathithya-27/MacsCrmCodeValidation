@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import MainLayout from './components/Layout/MainLayout';
 import CompanyMasterPage from './pages/masterdata/CompanyMaster';
@@ -37,7 +37,7 @@ const App: React.FC = () => {
       <CompanyProvider>
         <ErrorBoundary>
           <Toaster position="top-right" toastOptions={{ duration: 3000, style: { background: '#333', color: '#fff' } }} />
-          <HashRouter>
+          <BrowserRouter>
             <MainLayout>
               <Routes>
                 {/* Redirect root to Master Data for now */}
@@ -81,7 +81,7 @@ const App: React.FC = () => {
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </MainLayout>
-          </HashRouter>
+          </BrowserRouter>
         </ErrorBoundary>
       </CompanyProvider>
     </ThemeProvider>
