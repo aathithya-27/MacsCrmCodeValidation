@@ -51,6 +51,14 @@
       "pan_no": "AAAAA0000A",
       "tan_no": "CBRE00000A",
       "status": 1
+    },
+    {
+      "id": "4efb",
+      "status": 1,
+      "comp_id": 1001,
+      "client_id": 1,
+      "branch_id": "FIN01-CBE",
+      "branch_name": "salem"
     }
   ],
   "businessVerticals": [
