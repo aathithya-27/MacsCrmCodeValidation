@@ -72,7 +72,7 @@ const MasterDataLayout: React.FC<MasterDataLayoutProps> = ({ children, title }) 
     { name: 'Geography', path: '/master-data/geography', icon: Map },
     { name: 'Document Master', path: '/master-data/documents', icon: FileCheck },
     { name: 'Bank Master', path: '/master-data/bank', icon: Building2 },
-    { name: "Account's Category", path: '/master-data/accounts-category', icon: Calculator }, // Replaced Income/Expense
+    { name: "Account's Category", path: '/master-data/accounts-category', icon: Calculator },
     { name: 'Route Master', path: '/master-data/route', icon: Navigation },
     { name: 'Task Status', path: '/master-data/task-status', icon: FileText },
     { name: 'Customer Segment', path: '/master-data/customer-segment', icon: Users },
@@ -84,7 +84,7 @@ const MasterDataLayout: React.FC<MasterDataLayoutProps> = ({ children, title }) 
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 lg:items-start h-full">
-      {/* Mobile/Tablet Dropdown Navigation (< Large Screens) */}
+      {}
       <div className="lg:hidden w-full mb-4 flex-shrink-0">
         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Select Master Data Module</label>
         <div className="relative">
@@ -123,7 +123,7 @@ const MasterDataLayout: React.FC<MasterDataLayoutProps> = ({ children, title }) 
         </div>
       </div>
 
-      {/* Desktop Sidebar for Master Data (>= Large Screens) */}
+      {}
       <div className="hidden lg:flex w-64 flex-shrink-0 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 flex-col sticky top-0 max-h-[calc(100vh-6rem)]">
         <div className="p-4 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
           <h2 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
@@ -156,7 +156,7 @@ const MasterDataLayout: React.FC<MasterDataLayoutProps> = ({ children, title }) 
         </div>
       </div>
 
-      {/* Content Area */}
+      {}
       <div className="flex-1 min-w-0 w-full">
         <div className="mb-4 hidden lg:block">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-white">{title}</h2>
