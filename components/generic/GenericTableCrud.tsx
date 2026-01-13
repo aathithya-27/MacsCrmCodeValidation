@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Plus, Search, RefreshCw } from 'lucide-react';
+import { Plus, Search, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button, Input, Modal, DataTable } from '../ui';
 import { Pagination } from '../ui/Pagination';
 import { SmartForm, FormField } from './SmartForm';
@@ -8,6 +8,8 @@ import { useFetch } from '../../hooks/useFetch';
 import { createGenericApi } from '../../services/genericApi';
 import { useDebounce } from '../../hooks/useDebounce';
 import toast from 'react-hot-toast';
+import { sanitizeObject } from '../../utils/sanitization';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 interface ColumnDef<T> {
   header: string;
@@ -32,7 +34,7 @@ interface GenericTableCrudProps<T> {
   selectedId?: number | string;
   emptyMessage?: string;
   enablePagination?: boolean;
-  compact?: boolean; 
+  compact?: boolean;
 }
 
 export function GenericTableCrud<T extends { id?: number | string; status?: number }>({
@@ -52,7 +54,7 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
   enablePagination = true,
   compact = false
 }: GenericTableCrudProps<T>) {
-  const { data: rawData, loading, isRefetching, refetch, setData } = useFetch<T[]>(endpoint, { 
+  const { data: rawData, loading, isRefetching, error, refetch, setData } = useFetch<T[]>(endpoint, { 
     cacheKey: endpoint 
   });
 
@@ -62,13 +64,11 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [saving, setSaving] = useState(false);
   
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const api = useMemo(() => createGenericApi<T>(endpoint), [endpoint]);
 
-  // Filtering Logic
   const filteredData = useMemo(() => {
     let d = rawData || [];
     if (transformRawData) d = transformRawData(d);
@@ -78,18 +78,16 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
     const lowerQuery = debouncedSearch.toLowerCase();
     return d.filter(item => 
       searchKeys.some(key => {
-        const val = item[key];
-        return String(val).toLowerCase().includes(lowerQuery);
+        const val = (item as any)[key];
+        return String(val || '').toLowerCase().includes(lowerQuery);
       })
     );
   }, [rawData, transformRawData, debouncedSearch, searchKeys]);
 
-  // Reset to page 1 when search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch]);
 
-  // Pagination Logic
   const paginatedData = useMemo(() => {
     if (!enablePagination) return filteredData;
     const start = (currentPage - 1) * itemsPerPage;
@@ -104,29 +102,29 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
   };
 
   const handleEdit = (item: T) => {
-    setEditingItem(item);
+    setEditingItem({ ...item });
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (formData: any) => {
     setSaving(true);
     try {
-      let payload = { ...formData };
+      let payload = sanitizeObject({ ...formData });
       if (onSaveTransform) {
         payload = onSaveTransform(payload);
       }
 
       if (editingItem?.id) {
-        await api.update(editingItem.id, { ...editingItem, ...payload });
+        await api.update(editingItem.id, { ...editingItem, ...payload } as T);
         toast.success('Updated successfully');
       } else {
-        await api.create({ ...defaults, ...payload });
+        await api.create({ ...defaults, ...payload } as T);
         toast.success('Created successfully');
       }
       setIsModalOpen(false);
       refetch();
-    } catch (error: any) {
-      toast.error(error.message || 'Operation failed');
+    } catch (err: any) {
+      toast.error(err.message || 'Operation failed');
     } finally {
       setSaving(false);
     }
@@ -138,7 +136,6 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
       return;
     }
     
-    // Optimistic Update
     const oldStatus = item.status;
     const newStatus = oldStatus === 1 ? 0 : 1;
     setData(prev => prev?.map(i => i.id === item.id ? { ...i, status: newStatus } : i) || []);
@@ -146,74 +143,91 @@ export function GenericTableCrud<T extends { id?: number | string; status?: numb
     try {
       await api.patch(item.id!, { status: newStatus } as any);
       toast.success(newStatus === 1 ? 'Activated' : 'Deactivated');
-    } catch (error) {
+    } catch (err) {
       toast.error('Failed to update status');
-      // Rollback
       setData(prev => prev?.map(i => i.id === item.id ? { ...i, status: oldStatus } : i) || []);
       refetch();
     }
   };
 
-  return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 flex flex-col h-[calc(100vh-14rem)] min-h-[400px]">
-      <div className={`p-4 border-b border-gray-200 dark:border-slate-700 flex ${compact ? 'flex-col items-start gap-3' : 'flex-col sm:flex-row justify-between items-center gap-4'}`}>
-        <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-          {title}
-          {isRefetching && <RefreshCw size={14} className="animate-spin text-slate-400" />}
-        </h3>
-        <div className={`flex gap-3 w-full ${compact ? '' : 'sm:w-auto'}`}>
-          {searchKeys.length > 0 && (
-            <div className={`relative flex-1 ${compact ? 'w-full' : 'sm:w-64'}`}>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <Input 
-                className="pl-9 h-9" 
-                placeholder="Search..." 
-                value={searchQuery} 
-                onChange={e => setSearchQuery(e.target.value)} 
-              />
-            </div>
-          )}
-          {!disableAdd && (
-            <Button size="sm" onClick={handleCreate} icon={<Plus size={16} />}>Add</Button>
-          )}
-        </div>
+  if (error) {
+    return (
+      <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 p-6 rounded-lg text-center">
+        <AlertCircle className="mx-auto text-red-500 mb-2" size={32} />
+        <h4 className="font-bold text-red-700 dark:text-red-400">Failed to load {title}</h4>
+        <p className="text-sm text-red-600 dark:text-red-500 mb-4">{error}</p>
+        <Button size="sm" variant="outline" onClick={() => refetch()} icon={<RefreshCw size={14} />}>Retry</Button>
       </div>
-      
-      <DataTable 
-        data={paginatedData}
-        columns={columns}
-        loading={loading}
-        onEdit={handleEdit}
-        onToggleStatus={handleToggleStatus}
-        onRowClick={onRowClick}
-        selectedId={selectedId}
-        emptyMessage={emptyMessage}
-      />
+    );
+  }
 
-      {enablePagination && (
-        <Pagination 
-          currentPage={currentPage}
-          totalPages={totalPages}
-          itemsPerPage={itemsPerPage}
-          totalItems={filteredData.length}
-          onPageChange={setCurrentPage}
-          onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
-        />
-      )}
+  return (
+    <ErrorBoundary>
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 flex flex-col h-full min-h-[400px]">
+        <div className={`p-4 border-b border-gray-200 dark:border-slate-700 flex ${compact ? 'flex-col items-start gap-3' : 'flex-col md:flex-row justify-between items-center gap-4'}`}>
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              {title}
+            </h3>
+            {isRefetching && <RefreshCw size={14} className="animate-spin text-blue-500" />}
+          </div>
+          <div className={`flex flex-col sm:flex-row gap-3 w-full ${compact ? '' : 'md:w-auto'}`}>
+            {searchKeys.length > 0 && (
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <Input 
+                  className="pl-9 h-10 w-full" 
+                  placeholder="Search..." 
+                  value={searchQuery} 
+                  onChange={e => setSearchQuery(e.target.value)} 
+                />
+              </div>
+            )}
+            {!disableAdd && (
+              <Button size="md" onClick={handleCreate} icon={<Plus size={18} />} className="w-full sm:w-auto">Add</Button>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-x-auto">
+          <DataTable 
+            data={paginatedData}
+            columns={columns}
+            loading={loading}
+            onEdit={handleEdit}
+            onToggleStatus={handleToggleStatus}
+            onRowClick={onRowClick}
+            selectedId={selectedId}
+            emptyMessage={emptyMessage}
+          />
+        </div>
 
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        title={editingItem?.id ? `Edit ${title}` : `Add ${title}`}
-      >
-        <SmartForm 
-          fields={fields}
-          defaultValues={editingItem}
-          onSubmit={handleSubmit}
-          onCancel={() => setIsModalOpen(false)}
-          isLoading={saving}
-        />
-      </Modal>
-    </div>
+        {enablePagination && filteredData.length > 0 && (
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            itemsPerPage={itemsPerPage}
+            totalItems={filteredData.length}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(val) => { setItemsPerPage(val); setCurrentPage(1); }}
+          />
+        )}
+
+        <Modal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          title={editingItem?.id ? `Edit ${title}` : `Add ${title}`}
+          size="md"
+        >
+          <SmartForm 
+            fields={fields}
+            defaultValues={editingItem}
+            onSubmit={handleSubmit}
+            onCancel={() => setIsModalOpen(false)}
+            isLoading={saving}
+          />
+        </Modal>
+      </div>
+    </ErrorBoundary>
   );
 }

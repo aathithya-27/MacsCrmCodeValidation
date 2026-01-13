@@ -51,6 +51,25 @@
       "pan_no": "AAAAA0000A",
       "tan_no": "CBRE00000A",
       "status": 1
+    },
+    {
+      "id": "a3ff",
+      "status": 1,
+      "comp_id": 1001,
+      "client_id": 1,
+      "branch_id": "FIN01-SLM",
+      "branch_name": "Salem",
+      "date_of_creation": "2026-01-13",
+      "address_1": "239B,Konnakattu thittam,pandiyampalayam, kavindapadi",
+      "country_id": "1",
+      "state_id": "3",
+      "district_id": "4",
+      "city_id": "5",
+      "pincode": "638455",
+      "phone_no": "08754842664",
+      "address_2": "Tirupathi Valley Road",
+      "address_3": "das",
+      "area": "gobi"
     }
   ],
   "businessVerticals": [
@@ -253,6 +272,12 @@
       "insurance_type_id": 1,
       "insurance_sub_type_id": null,
       "doc_master_id": 2,
+      "is_mandatory": true
+    },
+    {
+      "id": "238a",
+      "insurance_type_id": "1",
+      "doc_master_id": "4",
       "is_mandatory": true
     }
   ],

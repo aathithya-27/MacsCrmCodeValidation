@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { DEFAULTS } from '../constants';
+import { sanitizeObject } from '../utils/sanitization';
 
 interface UseMasterCrudConfig<T> {
   api: {
@@ -60,10 +62,13 @@ export function useMasterCrud<T extends { id?: number | string; status?: number 
 
     setSaving(true);
     try {
-      if (currentItem.id) {
-        await api.update(currentItem.id, currentItem as T);
+      // Sanitize input before sending to API
+      const sanitizedItem = sanitizeObject(currentItem) as T;
+
+      if (sanitizedItem.id) {
+        await api.update(sanitizedItem.id, sanitizedItem);
       } else {
-        await api.create(currentItem as T);
+        await api.create(sanitizedItem);
       }
       toast.success(successMessage);
       handleCloseModal();
